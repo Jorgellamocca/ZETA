@@ -9,7 +9,7 @@ from streamlit_folium import st_folium
 # =========================
 # CONFIG
 # =========================
-RESULT_DIR = r"C:\Users\USER\Downloads\DASH\CAMBIO_CLIMATICO\RESULTADOS"
+RESULT_DIR = "RESULTADOS"
 
 st.set_page_config(layout="wide")
 st.title("Cambio Climático en el Perú")
