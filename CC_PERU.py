@@ -56,11 +56,12 @@ def format_val(value, variable):
 # =========================
 # DETECTAR ARCHIVOS
 # =========================
-files = glob.glob(os.path.join(RESULT_DIR, "*.gpkg"))
+files = glob.glob(os.path.join(RESULT_DIR, "*.geojson")) + \
+        glob.glob(os.path.join(RESULT_DIR, "*.gpkg"))
 
 data_dict = {}
 for f in files:
-    name = os.path.basename(f).replace(".gpkg", "")
+    name = os.path.basename(f).replace(".geojson", "").replace(".gpkg", "")
     parts = name.split("_")
 
     nivel = parts[0]
@@ -85,11 +86,18 @@ file_path = data_dict[nivel][escenario]
 variable = escenario.split("_")[0]
 
 # =========================
-# CACHE PRO
+# CARGA DE DATOS
 # =========================
 @st.cache_resource
 def load_data(path):
-    gdf = gpd.read_file(path)
+    try:
+        gdf = gpd.read_file(path)
+    except:
+        import json
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        gdf = gpd.GeoDataFrame.from_features(data)
+
     gdf["geometry"] = gdf["geometry"].simplify(0.01)
     return gdf
 
@@ -127,13 +135,20 @@ folium.GeoJson(
 ).add_to(m)
 
 # =========================
-# LEYENDAS COMPACTAS
+# LEYENDAS
 # =========================
 legend_pr = """
-<div style="position: fixed; bottom: 20px; left: 20px;
-width: 110px; background-color: white;
-z-index:9999; font-size:10px;
+<div style="
+position: fixed;
+bottom: 20px;
+left: 20px;
+width: 110px;
+background-color: white;
+z-index:9999;
+font-size:10px;
 border:0.5px solid #999;
+padding: 6px;
+">
 <b>Δ PR (%)</b><br>
 <div style="background:#663300;width:10px;height:7px;display:inline-block;"></div> <= -90<br>
 <div style="background:#7b4d1b;width:10px;height:7px;display:inline-block;"></div> -90 a -75<br>
@@ -164,109 +179,27 @@ font-size:10px;
 border:0.5px solid #999;
 padding: 6px;
 ">
-
 <b>Δ Temp (°C)</b><br>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#ffffcc;width:10px;height:6px;display:inline-block;margin-right:5px;"></span>
-<= 0.2
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fff7b9;width:8px;height:6px;margin-right:5px;"></span>
-0.2 a 0.4
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fff0a7;width:8px;height:6px;margin-right:5px;"></span>
-0.4 a 0.6
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#ffe895;width:8px;height:6px;margin-right:5px;"></span>
-0.6 a 0.8
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fee983;width:8px;height:6px;margin-right:5px;"></span>
-0.8 a 1.0
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fed572;width:8px;height:6px;margin-right:5px;"></span>
-1.0 a 1.2
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fec460;width:8px;height:6px;margin-right:5px;"></span>
-1.2 a 1.4
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#feb44e;width:8px;height:6px;margin-right:5px;"></span>
-1.4 a 1.6
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fea446;width:8px;height:6px;margin-right:5px;"></span>
-1.6 a 1.8
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fd953f;width:8px;height:6px;margin-right:5px;"></span>
-1.8 a 2.0
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fd8038;width:8px;height:6px;margin-right:5px;"></span>
-2.0 a 2.2
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fc6531;width:8px;height:6px;margin-right:5px;"></span>
-2.2 a 2.4
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#fb4b29;width:8px;height:6px;margin-right:5px;"></span>
-2.4 a 2.6
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#f03523;width:8px;height:6px;margin-right:5px;"></span>
-2.6 a 2.8
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#e61f1d;width:8px;height:6px;margin-right:5px;"></span>
-2.8 a 3.0
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#d7121f;width:8px;height:6px;margin-right:5px;"></span>
-3.0 a 3.2
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#c70723;width:8px;height:6px;margin-right:5px;"></span>
-3.2 a 3.4
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#b30026;width:8px;height:6px;margin-right:5px;"></span>
-3.4 a 3.6
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#9a0026;width:8px;height:6px;margin-right:5px;"></span>
-3.6 a 3.8
-</div>
-
-<div style="display:flex;align-items:center;">
-<span style="background:#800026;width:8px;height:6px;margin-right:5px;"></span>
->= 3.8
-</div>
-
+<div><span style="background:#ffffcc;width:10px;height:6px;display:inline-block;"></span> <= 0.2</div>
+<div><span style="background:#fff7b9;width:10px;height:6px;display:inline-block;"></span> 0.2 a 0.4</div>
+<div><span style="background:#fff0a7;width:10px;height:6px;display:inline-block;"></span> 0.4 a 0.6</div>
+<div><span style="background:#ffe895;width:10px;height:6px;display:inline-block;"></span> 0.6 a 0.8</div>
+<div><span style="background:#fee983;width:10px;height:6px;display:inline-block;"></span> 0.8 a 1.0</div>
+<div><span style="background:#fed572;width:10px;height:6px;display:inline-block;"></span> 1.0 a 1.2</div>
+<div><span style="background:#fec460;width:10px;height:6px;display:inline-block;"></span> 1.2 a 1.4</div>
+<div><span style="background:#feb44e;width:10px;height:6px;display:inline-block;"></span> 1.4 a 1.6</div>
+<div><span style="background:#fea446;width:10px;height:6px;display:inline-block;"></span> 1.6 a 1.8</div>
+<div><span style="background:#fd953f;width:10px;height:6px;display:inline-block;"></span> 1.8 a 2.0</div>
+<div><span style="background:#fd8038;width:10px;height:6px;display:inline-block;"></span> 2.0 a 2.2</div>
+<div><span style="background:#fc6531;width:10px;height:6px;display:inline-block;"></span> 2.2 a 2.4</div>
+<div><span style="background:#fb4b29;width:10px;height:6px;display:inline-block;"></span> 2.4 a 2.6</div>
+<div><span style="background:#f03523;width:10px;height:6px;display:inline-block;"></span> 2.6 a 2.8</div>
+<div><span style="background:#e61f1d;width:10px;height:6px;display:inline-block;"></span> 2.8 a 3.0</div>
+<div><span style="background:#d7121f;width:10px;height:6px;display:inline-block;"></span> 3.0 a 3.2</div>
+<div><span style="background:#c70723;width:10px;height:6px;display:inline-block;"></span> 3.2 a 3.4</div>
+<div><span style="background:#b30026;width:10px;height:6px;display:inline-block;"></span> 3.4 a 3.6</div>
+<div><span style="background:#9a0026;width:10px;height:6px;display:inline-block;"></span> 3.6 a 3.8</div>
+<div><span style="background:#800026;width:10px;height:6px;display:inline-block;"></span> >= 3.8</div>
 </div>
 """
 
