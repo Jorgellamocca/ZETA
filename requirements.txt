@@ -1,9 +1,8 @@
 streamlit
-geopandas
+pandas
+numpy
+plotly
 folium
 streamlit-folium
-plotly
 shapely
-fiona
 pyproj
-rtree
